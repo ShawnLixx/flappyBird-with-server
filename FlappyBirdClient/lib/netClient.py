@@ -100,5 +100,5 @@ class NetClient:
             'num': num})
 
     def updateTimeStamp(self):
-        return self._sendAndRecv({
+        return self._send({
             'type': 6})
