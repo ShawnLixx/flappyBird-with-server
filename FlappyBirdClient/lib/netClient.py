@@ -39,13 +39,11 @@ class NetClient:
                 return None
         return wrapper
 
+    @connectedRequired
     def _send(self, data):
-        if self.connected:
-            data['sid'] = self.sid
-            netstream.send(self.sock, data)
-            return True
-        else:
-            return False
+        data['sid'] = self.sid
+        netstream.send(self.sock, data)
+        return True
 
     @connectedRequired
     def _recv(self):
@@ -56,15 +54,16 @@ class NetClient:
             return data
 
     def _sendAndRecv(self, data):
-        self._send(data)
-        data = self._recv()
+        if self._send(data):
+            data = self._recv()
+        else:
+            data = None
         if data == None:
             data = {'code': -1} # -1 for network error
         return data
 
     # functions corresponding to API
 
-    @connectedRequired
     def registration(self, username, password):
         password = _getMD5(password)
         return self._sendAndRecv({
@@ -72,7 +71,6 @@ class NetClient:
             'username': username,
             'password': password})
 
-    @connectedRequired
     def login(self, username, password):
         password = _getMD5(password)
         return self._sendAndRecv({
@@ -80,32 +78,27 @@ class NetClient:
             'username': username,
             'password': password})
 
-    @connectedRequired
     def initializeSession(self, token):
         return self._sendAndRecv({
             'type': 2,
             'token': token})
 
-    @connectedRequired
     def notice(self):
         return self._sendAndRecv({
             'type': 5})
 
-    @connectedRequired
     def logout(self):
         return self._sendAndRecv({
             'type': 3})
 
-    @connectedRequired
     def updateData(self, token, score, time, num):
         return self._sendAndRecv({
             'type': 4,
-            'token' token,
+            'token': token,
             'score': score,
             'time': time,
             'num': num})
 
-    @connectedRequired
     def updateTimeStamp(self):
         return self._sendAndRecv({
             'type': 6})
