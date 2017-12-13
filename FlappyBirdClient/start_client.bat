@@ -1,0 +1,2 @@
+python FlappyBird.py
+pause
