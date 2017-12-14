@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import socket, netstream
 import hashlib
+import traceback
 MD5 = hashlib.md5()
 
 def _getMD5(s):
@@ -19,13 +20,14 @@ class NetClient:
         self.sid = -1
 
     def connect(self):
-        try: 
+        try:
             self.sock.connect((self.host, self.port))
             # receive sid
             self.connected = True
             response = self._recv()
             self.sid = response['sid']
         except Exception:
+            traceback.print_exc()
             self.connected = False
 
         return self.connected
@@ -34,7 +36,7 @@ class NetClient:
     def connectedRequired(fun):
         def wrapper(self, *args, **kwargs):
             if self.connected:
-                return fun(self, **kwargs)
+                return fun(self, *args)
             else:
                 return None
         return wrapper
@@ -47,7 +49,7 @@ class NetClient:
 
     @connectedRequired
     def _recv(self):
-        data = netstream.read(sock)
+        data = netstream.read(self.sock)
         if data == netstream.TIMEOUT or data == netstream.CLOSED or data == netstream.EMPTY:
             return None
         else:
@@ -87,9 +89,10 @@ class NetClient:
         return self._sendAndRecv({
             'type': 5})
 
-    def logout(self):
+    def logout(self, token):
         return self._sendAndRecv({
-            'type': 3})
+            'type': 3,
+            'token': token})
 
     def updateData(self, token, score, time, num):
         return self._sendAndRecv({
@@ -102,3 +105,14 @@ class NetClient:
     def updateTimeStamp(self):
         return self._send({
             'type': 6})
+
+    def getUserInfo(self, token):
+        return self._sendAndRecv({
+            'type': 7,
+            'token': token})
+
+    def getLeaderboard(self, by):
+        return self._sendAndRecv({
+            'type': 8,
+            'by': by})
+

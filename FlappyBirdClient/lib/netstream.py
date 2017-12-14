@@ -23,7 +23,7 @@ def send(sock, dic):  # take dict as argument!!
 # return: table-success TIMEOUT-timeout CLOSED-closed EMPTY-empty
 def read(sock):
     #读取三位的长度信息
-    sock.setblocking(0)
+    sock.setblocking(1)
     try:
         length = sock.recv(3)
     except socket.error as (err_code, err_message):

@@ -116,3 +116,7 @@ Session.vim
 
 # Auto-generated tag files
 tags
+
+# Project related profile and database
+FlappyBirdClient/userData/
+FlappyBirdServer/serverData/

@@ -27,8 +27,8 @@ class FlappyServer:
             self.allUsers = {}
             self.blackList = []
             self.nextUid = 0
-            self.save()
             self.notice = ""
+            self.save()
         self.connections = {}
         self.sid = 0
         self.host = HOST
@@ -37,6 +37,7 @@ class FlappyServer:
 
     def run(self):
         self.sock.bind((self.host, self.port))
+        self.sock.listen(4)
         self.inputs = []
         self.inputs.append(self.sock)
         print('server start! listening host:{} port:{}'.format(self.host, self.port))
@@ -48,7 +49,7 @@ class FlappyServer:
             try:
                 rs, ws, es = select.select(self.inputs, [], [])
                 for r in rs:
-                    if r is s:
+                    if r is self.sock:
                         # accept
                         connection, addr = self.sock.accept()
                         print('Got connection from' + str(addr) + " sid: {}".format(self.sid))
@@ -63,7 +64,7 @@ class FlappyServer:
                         cInfo['uid'] = -1 # -1 for not initalized
                         cInfo['startTime'] = time.time()
                         cInfo['timeStamp'] = time.time()
-                        self.connections[sid] = cInfo
+                        self.connections[self.sid] = cInfo
 
                         self.sid += 1
                     else:
@@ -78,14 +79,14 @@ class FlappyServer:
                                 continue
                             # for registration
                             if recvData['type'] == 0: 
-                                self.registration(recvData['username'], recvData['passowrd'], usid)
+                                self.registration(recvData['username'], recvData['password'], usid)
 
                             # for login
                             elif recvData['type'] == 1:
                                 self.login(recvData['username'], recvData['password'], usid)
 
                             # for initialize session
-                            elif recvData['type'] == 2:.
+                            elif recvData['type'] == 2:
                                 self.initalSession(recvData['token'], usid)
                             
                             # for request notice
@@ -96,6 +97,10 @@ class FlappyServer:
                             elif recvData['type'] == 6:
                                 self.updateTimeStamp(usid)
 
+                            # for getting leaderboard
+                            elif recvData['type'] == 8:
+                                self.getLeaderboard(recvData['by'], usid)
+
                             # following request require session initalized
                             elif self.connections[usid]['uid'] == -1: # not initialized session
                                 netstream.send(self.connections[usid]['connection'], {
@@ -104,11 +109,16 @@ class FlappyServer:
                             else: # session initialized
                                 # for logout
                                 if recvData['type'] == 3:
-                                    self.logout(recvData['token'], recvData['sid'], usid)
+                                    self.logout(recvData['token'], usid)
 
                                 # for update states
                                 elif recvData['type'] == 4:
-                                    self.updateStates(recvData['token'], recvData['score'], recvData['time'], recvData['num'], usid)
+                                    self.updateData(recvData['token'], recvData['score'], recvData['time'], recvData['num'], usid)
+
+                                # for getting user information
+                                elif recvData['type'] == 7:
+                                    self.getUserInfo(recvData['token'], usid)
+
 
             except Exception:
                 traceback.print_exc()
@@ -120,7 +130,7 @@ class FlappyServer:
                 "allUsers": self.allUsers,
                 "blackList": self.blackList,
                 "nextUid": self.nextUid,
-                "notice", self.notice}, f)
+                "notice": self.notice}, f)
 
     def _registration(self, username, password):
         # check for username availability
@@ -140,16 +150,9 @@ class FlappyServer:
             self.save()
             return 1
 
-    def _offline(self, usid):
-        if usid in self.connections:
-            del self.connections[usid]
-            return 1 # 1 for success
-        else:
-            return 2 # 2 for not logined
-
     def _logout(self, uid):
         self.allUsers[uid]['token'] = ""
-
+        
     def _addToBlack(self, uid):
         if uid not in self.blackList:
             self.blackList.append(uid)
@@ -169,7 +172,6 @@ class FlappyServer:
     def _getUidCheckToken(self, token, usid):
         # check token validation
         uid = self.connections[usid]['uid']
-        self.black
         user = self.allUsers[uid]
         if 'token' in user and user['token'] != "":
             if user['token'] == token:
@@ -182,7 +184,7 @@ class FlappyServer:
             return None
 
     def registration(self, username, password, usid):
-        code = self._registration(name, password)
+        code = self._registration(username, password)
         netstream.send(self.connections[usid]['connection'], {
            "code": code}) 
 
@@ -224,7 +226,7 @@ class FlappyServer:
             netstream.send(self.connections[usid]['connection'], {
                 "code": 5}) # code 5 for auth failed
         else:
-            self._offine(usid)
+            self.connections[usid]['uid'] = -1
             self._logout(uid)
             netstream.send(self.connections[usid]['connection'], {
                 "code": 1}) # code 1 for success
@@ -255,3 +257,34 @@ class FlappyServer:
 
     def updateTimeStamp(self, usid):
         self.connections[usid]['timeStamp'] = time.time()
+
+    def getUserInfo(self, token, usid):
+        uid = self._getUidViaToken(token)
+        if uid == None:
+            netstream.send(self.connections[usid]['connection'], {
+                "code": 5}) # code 5 for token invalid
+        else:
+            user = self.allUsers[uid]
+            netstream.send(self.connections[usid]['connection'], {
+                "code": 1,
+                "username": user['username'],
+                "score": user['best_score'],
+                "time": user['best_time'],
+                "num": user['best_num']}) # code 1 for success
+
+    def getLeaderboard(self, by, usid):
+        key = "best_score"
+        if by == 1:
+            key = "best_time"
+        elif by == 2:
+            key = "best_num"
+        # get list of user sorted by key
+        sortedUsers = sorted(self.allUsers.values(), key = lambda x: x[key], reverse = True)
+        # get top 10 user
+        sortedUsers = sortedUsers[0:10]
+        leaderboard = [{'username': user['username'],
+            'data': user[key]} for user in sortedUsers]
+        netstream.send(self.connections[usid]['connection'], {
+            "code": 1,
+            "leaderboard": leaderboard}) # code 1 for success
+
