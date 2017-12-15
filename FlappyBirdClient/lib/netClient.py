@@ -2,9 +2,9 @@
 import socket, netstream
 import hashlib
 import traceback
-MD5 = hashlib.md5()
 
 def _getMD5(s):
+    MD5 = hashlib.md5()
     MD5.update(s)
     return MD5.hexdigest()
 
@@ -103,7 +103,7 @@ class NetClient:
             'num': num})
 
     def updateTimeStamp(self):
-        return self._send({
+        return self._sendAndRecv({
             'type': 6})
 
     def getUserInfo(self, token):

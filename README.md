@@ -1,2 +1,2 @@
-# client-server-flappyBird
+# flappyBird-with-server
 FlappyBird with client-server model.
