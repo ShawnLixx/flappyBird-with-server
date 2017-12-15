@@ -48,9 +48,6 @@ class FlappyServer:
         self.saver = None
         self._startSaver()
         
-        print("Enter command line environment for server manager.")
-        print("Command help for instructions.")
-
         # Start cmd loop.
         try:
             returnValue = ServerCmd(self).cmdloop()
@@ -250,6 +247,25 @@ class FlappyServer:
             self.save()
             return 1
 
+    # delete user from connections
+    def _delConnectViaUid(self, uid):
+        for usid in self.connections:
+            if uid == self.connections[usid]['uid']:
+                del self.connections[usid]
+                break
+
+    # delete user
+    def _delUser(self, uid):
+        if self._uidCheck(uid):
+            self._rmFromBlack(uid)
+            # remove session if exist
+            self._delConnectViaUid(uid)
+            # remove from all users
+            del self.allUsers[uid]
+            return True
+        else:
+            False
+
     def _logout(self, uid):
         self.allUsers[str(uid)]['token'] = ""
         
@@ -269,6 +285,10 @@ class FlappyServer:
             return True
         else:
             return False
+
+    # set server notice
+    def _setNotice(self, s):
+        self.notice = s
 
     def _checkBlackList(self, uid):
         return int(uid) in self.blackList

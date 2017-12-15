@@ -12,11 +12,10 @@ from bird import *
 from score import *
 from pipe import *
 from collision import *
-from netClient import NetClient
 from errors import getErrorString
+from netClient import NetClient
 import common
 from account import Account
-
 
 #vars
 gameLayer = None
@@ -38,7 +37,7 @@ isGamseStart = False
 difficulty = 0 # 0~2 three stages
 
 user = Account()
-net = NetClient()
+net = None
 
 def initGameLayer():
     global spriteBird, gameLayer, land_1, land_2
@@ -58,7 +57,7 @@ def initGameLayer():
     # add gameLayer to gameScene
     gameScene.add(gameLayer)
 
-def game_start(_gameScene):
+def game_start(_gameScene, host, port):
     global gameScene, net
     # 给gameScene赋值
     gameScene = _gameScene
@@ -67,6 +66,7 @@ def game_start(_gameScene):
     # gameLayer.add(log_in_botton, z=20, name=log_in_botton.name)
     start_botton = SingleGameStartMenu()
     gameLayer.add(start_botton, z=20, name=start_botton.name)
+    net = NetClient(host, port)
     net.connect()
 
 def createLabel(value, x, y):
