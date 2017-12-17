@@ -1,10 +1,9 @@
 import os
 import pyglet
 from account import Account
-from netClient import NetClient
 
 user = Account()
-net = NetClient()
+net = None
 
 visibleSize = {"width":228, "height":512}
 

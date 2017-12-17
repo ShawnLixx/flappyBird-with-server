@@ -13,8 +13,8 @@ from score import *
 from pipe import *
 from collision import *
 from errors import getErrorString
+from netClient import NetClient
 import common
-from time import sleep
 
 #vars
 gameLayer = None
@@ -53,8 +53,9 @@ def initGameLayer():
     # add gameLayer to gameScene
     gameScene.add(gameLayer)
 
-def game_start(_gameScene):
+def game_start(_gameScene, host, port):
     global gameScene, start_botton
+    common.net = NetClient(host = host, port = port)
     # 给gameScene赋值
     gameScene = _gameScene
     initGameLayer()

@@ -2,8 +2,15 @@
 import cmd
 from functools import wraps
 from argumentParser import ArgumentParser
+import hashlib, traceback
 
 INF = float('inf')
+
+def _getMD5(s):
+    MD5 = hashlib.md5()
+    MD5.update(s)
+    return MD5.hexdigest()
+
 
 class ServerCmd(cmd.Cmd, object):
     # A command line handler for server.
@@ -11,6 +18,22 @@ class ServerCmd(cmd.Cmd, object):
         super(ServerCmd, self).__init__()
         self.server = server
         self.prompt = "FlappyServer> "
+        self.intro = "***Enter command line environment for server manager.***\n" \
+        "==============================================================\n" \
+        "List of supported command:\n" \
+        "cllog:  Clear log.\n" \
+        "help:   Print all command and get help.\n" \
+        "log:    Show server log.\n" \
+        "ls:     Show details of all current connections.\n" \
+        "lsblk:  Show details of users in black list.\n" \
+        "muser:  Modify user. Change user profile, remove user, add/remove user to/from black list.\n" \
+        "notice: Change server notice.\n" \
+        "nuser:  Create new users.\n" \
+        "server: Change or show server status(start, stop, restart).\n" \
+        "user:   Search user under conditions(substring of name, range of best score, " \
+        "longest survive time, greatest number of passed pipes.\n" \
+        "==============================================================\n" \
+        '''Enter "help <command>" to show detail of command usage.'''
 
         # init some argument parsers for command
         # user command
@@ -48,10 +71,21 @@ class ServerCmd(cmd.Cmd, object):
                 help = "modify user longest surviving time, input should be integer.")
         self.muserParser.add_argument("--num", type = int,
                 help = "modify user greatest number of passed pipes, input should be integer.")
+        self.muserParser.add_argument("--rm", action = "store_true",
+                help = "remove user from database.")
         self.muserParser.add_argument("--addbl", action = "store_true",
                 help = "put user in black list.")
         self.muserParser.add_argument("--rmbl", action = "store_true",
                 help = "remove user from black list.")
+        
+        # nuser command
+        self.nuserParser = ArgumentParser(
+                prog = "nuser",
+                description = 'Create a new user.')
+        self.nuserParser.add_argument("username", type = str,
+                help = "username of new user.")
+        self.nuserParser.add_argument("password", type = str,
+                help = "password of new user.")
 
 
         # log command
@@ -73,6 +107,16 @@ class ServerCmd(cmd.Cmd, object):
                 help = "show server status.")
 
     
+    # exception handle
+    def cmdloop(self, intro=None):
+        try:
+            super(ServerCmd, self).cmdloop(intro = intro)
+        except Exception:
+            traceback.print_exc()
+            self.lock.release()
+            self.server._exit()
+
+
     def do_EOF(self, line):
         """Enter ctrl+d to exit this environment.
         (Note: Server will also be stopped.)"""
@@ -147,7 +191,7 @@ class ServerCmd(cmd.Cmd, object):
         print("\nNote: In the above table, 'Score', 'Time', 'Number', 'Online time' stand for" \
             "best game score, longest game time, best number of passed pipes," \
             "online time since connected to server. And the unit of 'Time' and 'Online time'" \
-            "is second")
+            "is second.")
 
     
     # User related
@@ -164,7 +208,7 @@ class ServerCmd(cmd.Cmd, object):
                 user['best_score'], user['best_time'], user['best_num']))
         print("\nNote: In the above table, 'Score', 'Time', 'Number' stand for" \
             "best game score, longest game time, best number of passed pipes," \
-            "And the unit of 'Time' and is second")
+            "And the unit of 'Time' and is second.")
 
 
     # list users according to regulation
@@ -200,48 +244,66 @@ class ServerCmd(cmd.Cmd, object):
         args = self.muserParser.parse_args(line.split())
         if args != None:
             uid = args.uid
+            uid = str(uid)
             # check uid exists
             if self.server._uidCheck(uid):
-                if args.name:
-                    # username already in use
-                    if self.server._usernameInUseCheck(args.name):
-                        print("Error: User name already in use!")
-                    else:
-                        self.server.allUsers[str(uid)]['username'] = args.name
-                        print("User name modified.")
-                if args.score:
-                    if args.score < 0:
-                        print("Error: score should not be less than 0!")
-                    else:
-                        self.server.allUsers[str(uid)]['best_score'] = args.score
-                        print("Best score modified.")
-                if args.time:
-                    if args.time < 0:
-                        print("Error: time should not be less than 0!")
-                    else:
-                        self.server.allUsers[str(uid)]['best_time'] = args.time
-                        print("Longest time modified.")
-                if args.num:
-                    if args.num < 0:
-                        print("Error: num should not be less than 0!")
-                    else:
-                        self.server.allUsers[str(uid)]['best_num'] = args.num
-                        print("Greatest number of passed pipes modified.")
-                if args.addbl:
-                    if self.server._addToBlack(uid):
-                        print("User added to black list.")
-                    else:
-                        print("Error: User already in black list!")
-                if args.rmbl:
-                    if self.server._rmFromBlack(uid):
-                        print("User removed from black list.")
-                    else:
-                        print("Error: User not in black list!")
+                if args.rm:
+                    # remove user
+                    self.server._delUser(uid)
+                    print("User deleted.")
+                else:
+                    if args.name:
+                        # username already in use
+                        if self.server._usernameInUseCheck(args.name):
+                            print("Error: User name already in use!")
+                        else:
+                            self.server.allUsers[uid]['username'] = args.name
+                            print("User name modified.")
+                    if args.score:
+                        if args.score < 0:
+                            print("Error: score should not be less than 0!")
+                        else:
+                            self.server.allUsers[uid]['best_score'] = args.score
+                            print("Best score modified.")
+                    if args.time:
+                        if args.time < 0:
+                            print("Error: time should not be less than 0!")
+                        else:
+                            self.server.allUsers[uid]['best_time'] = args.time
+                            print("Longest time modified.")
+                    if args.num:
+                        if args.num < 0:
+                            print("Error: num should not be less than 0!")
+                        else:
+                            self.server.allUsers[uid]['best_num'] = args.num
+                            print("Greatest number of passed pipes modified.")
+                    if args.addbl:
+                        if self.server._addToBlack(int(uid)):
+                            print("User added to black list.")
+                        else:
+                            print("Error: User already in black list!")
+                    if args.rmbl:
+                        if self.server._rmFromBlack(int(uid)):
+                            print("User removed from black list.")
+                        else:
+                            print("Error: User not in black list!")
             else:
                 print("Input uid invalid!")
 
     def help_muser(self):
         self.muserParser.print_help()
+
+    # create new user
+    def do_nuser(self, line):
+        args = self.nuserParser.parse_args(line.split())
+        if args != None:
+            if self.server._registration(args.username, _getMD5(args.password)) == 2:
+                print("Username already in use!")
+            else:
+                print("User created successfully.")
+    def help_nuser(self):
+        self.nuserParser.print_help()
+
 
 
     # List black list
@@ -280,10 +342,19 @@ class ServerCmd(cmd.Cmd, object):
             # show server status
             if args.status:
                 if self.server.runRequestHandle:
-                    print("Server is running at {}:{} with {} connections currently.".format(
-                        self.server.host, self.server.port, len(self.server.connections)))
+                    print("Server is running at {}:{} with {} connections currently.\nServer Notice: {}".format(
+                        self.server.host, self.server.port, len(self.server.connections), self.server.notice))
                 else:
                     print("Server is stopped.")
 
     def help_server(self):
         self.serverParser.print_help()
+
+
+    # set notice
+    @lockNeed
+    def do_notice(self, line):
+        """notice NOTICE_TEXT
+        Set new server notice."""
+        self.server._setNotice(line)
+        print("Set new server notice: {}".format(self.server.notice))

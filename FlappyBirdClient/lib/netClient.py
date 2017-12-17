@@ -8,14 +8,11 @@ def _getMD5(s):
     MD5.update(s)
     return MD5.hexdigest()
 
-HOST = '127.0.0.1'
-PORT = 9234
-
 class NetClient:
-    def __init__(self):
+    def __init__(self, host, port):
         self.connected = False
-        self.host = HOST
-        self.port = PORT
+        self.host = host
+        self.port = port
         self.sock = socket.socket()
         self.sid = -1
 
