@@ -37,7 +37,7 @@ class ActorModel(object):
             self.name = name
 
 def createPipes(layer, gameScene, spriteBird, score, difficulty):
-    global g_score, movePipeFunc, calScoreFunc
+    global g_score, movePipeFunc, calScoreFunc, time, pass_num
 
     # Randomly generate next pipe height, according to last pipe
     def generateNextPipe():
@@ -127,15 +127,31 @@ def createPipes(layer, gameScene, spriteBird, score, difficulty):
                 break
 
     def calScore(dt):
-        global g_score
+        global g_score, pass_num, time
+        time = time + dt
         birdXPosition = spriteBird.position[0]
         for i in range(0, pipeCount):
             if pipeState[i] == PIPE_NEW and pipes[i].position[0]< birdXPosition:
                 pipeState[i] = PIPE_PASS
-                g_score = g_score + 1
+                #update data
+                if difficulty == 0:
+                    g_score = g_score + 1
+                elif difficulty == 1:
+                    g_score = g_score + 3
+                elif difficulty == 2:
+                    g_score = g_score + 5
+                pass_num = pass_num + 1
                 setSpriteScores(g_score) #show score on top of screen
+
+                data = common.net.initializeSession(common.user.token)
+                if data['code'] != 1:
+                    err_str = getErrorString(data['code'])
+
+                common.net.updateData(common.user.token, g_score, time, pass_num)
     
     g_score = score
+    time = 0
+    pass_num = score
     initPipe()
     movePipeFunc = movePipe
     calScoreFunc = calScore
