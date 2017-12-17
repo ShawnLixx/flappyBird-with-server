@@ -31,7 +31,7 @@ class ServerCmd(cmd.Cmd, object):
         "nuser:  Create new users.\n" \
         "server: Change or show server status(start, stop, restart).\n" \
         "user:   Search user under conditions(substring of name, range of best score, " \
-        "longest survive time, greatest number of passed pipes\n" \
+        "longest survive time, greatest number of passed pipes.\n" \
         "==============================================================\n" \
         '''Enter "help <command>" to show detail of command usage.'''
 
@@ -191,7 +191,7 @@ class ServerCmd(cmd.Cmd, object):
         print("\nNote: In the above table, 'Score', 'Time', 'Number', 'Online time' stand for" \
             "best game score, longest game time, best number of passed pipes," \
             "online time since connected to server. And the unit of 'Time' and 'Online time'" \
-            "is second")
+            "is second.")
 
     
     # User related
@@ -208,7 +208,7 @@ class ServerCmd(cmd.Cmd, object):
                 user['best_score'], user['best_time'], user['best_num']))
         print("\nNote: In the above table, 'Score', 'Time', 'Number' stand for" \
             "best game score, longest game time, best number of passed pipes," \
-            "And the unit of 'Time' and is second")
+            "And the unit of 'Time' and is second.")
 
 
     # list users according to regulation
