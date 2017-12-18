@@ -96,7 +96,7 @@ muser:  Modify user. Change user profile, remove user, add/remove user to/from b
 notice: Change server notice.
 nuser:  Create new users.
 server: Change or show server status(start, stop, restart).
-user:   Search user under conditions(substring of name, range of best score, longest survive time, greatest number of passed pipes.
+user:   Search user under conditions(substring of name, range of best score, longest survive time, greatest number of passed pipes).
 ==============================================================
 Enter "help <command>" to show detail of command usage.
 

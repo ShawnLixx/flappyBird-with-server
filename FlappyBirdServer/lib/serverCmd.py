@@ -31,7 +31,7 @@ class ServerCmd(cmd.Cmd, object):
         "nuser:  Create new users.\n" \
         "server: Change or show server status(start, stop, restart).\n" \
         "user:   Search user under conditions(substring of name, range of best score, " \
-        "longest survive time, greatest number of passed pipes.\n" \
+        "longest survive time, greatest number of passed pipes).\n" \
         "==============================================================\n" \
         '''Enter "help <command>" to show detail of command usage.'''
 
