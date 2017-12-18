@@ -8,7 +8,7 @@ This project mainly targets to Mobile and Network Programming Practice course fr
 This project contains a copy of Flappy Bird game and we made contributions to enhance the simple game with client-server model.
 We developed a simple server and modify Flappy Bird game to a client.
 
-![Client Screenshot](/screenshots/client.png)
+<img src="/screenshots/client.png" height="400px">
 
 Main features:
 
