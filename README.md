@@ -66,7 +66,7 @@ A GUI environment is required to start the graphical Flappy Bird client.
 
 ### Server usage
 
-Enter `FlappyBirdServer` directory first. And you can start server on Windows by clicking `start\_server.bat`.
+Enter `FlappyBirdServer` directory first. And you can start server on Windows by clicking `start_server.bat`.
 
 It's recommanded to use command-line to start the server with the following command:
 
@@ -79,7 +79,7 @@ python server.py [-h] [--host HOST] [--port PORT] [--timeout TIMEOUT]
 that haven't send request after `TIMEOUT` seconds since last request. To avoid data loss, our server writes server data to disk
 every `SAVING_GAP` seconds. The default values of `TIMEOUT` and `SAVING_GAP` are 60 and 300.
 
-After start our server using command-line or click `start\_server.bat`, a command-line server manangement tool will start. There
+After start our server using command-line or click `start_server.bat`, a command-line server manangement tool will start. There
 are commands you can use to manage the server and modify user accounts. All commands are shown when you enter the command-line
 environment as below:
 
