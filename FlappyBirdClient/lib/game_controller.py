@@ -142,7 +142,6 @@ def showNotice():
         showContent("Notice:"+data['notice'])
     timer = threading.Timer(2, removeContent)
     timer.start()
-    # showContent("abcdefghij")
 
 
 def showContent(content):
