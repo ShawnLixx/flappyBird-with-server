@@ -15,6 +15,7 @@ from collision import *
 from errors import getErrorString
 from netClient import NetClient
 import common
+import threading
 
 #vars
 gameLayer = None
@@ -139,6 +140,8 @@ def showNotice():
         showContent(getErrorString(data['code']))
     else:
         showContent("Notice:"+data['notice'])
+    timer = threading.Timer(2, removeContent)
+    timer.start()
     # showContent("abcdefghij")
 
 
@@ -439,9 +442,9 @@ class RankByWhatMenu(Menu):
         self.menu_valign = CENTER
         self.menu_halign = CENTER
         items = [
-                (ImageMenuItem(common.load_image("button_difficulty_easy.png"), lambda: self.showRank(0))),
-                (ImageMenuItem(common.load_image("button_difficulty_medium.png"), lambda: self.showRank(1))),
-                (ImageMenuItem(common.load_image("button_difficulty_hard.png"), lambda: self.showRank(2))),
+                (ImageMenuItem(common.load_image("button_rank_score.png"), lambda: self.showRank(0))),
+                (ImageMenuItem(common.load_image("button_rank_time.png"), lambda: self.showRank(1))),
+                (ImageMenuItem(common.load_image("button_rank_number.png"), lambda: self.showRank(2))),
                 ]
         self.create_menu(items,selected_effect=zoom_in(),unselected_effect=zoom_out())
 

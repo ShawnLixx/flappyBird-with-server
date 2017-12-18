@@ -2,6 +2,7 @@
 import os
 import json
 import hashlib
+import traceback
 
 from network import send_message
 
@@ -17,7 +18,7 @@ class Account:
         # check if there is already a user file.
         self.path = os.path.join(DIR, USERFILE)
         try:
-            with open(path, "r") as f:
+            with open(self.path, "r") as f:
                 userData = json.load(f)
 
             self.username = userData["username"]
@@ -28,6 +29,7 @@ class Account:
             self.best_time = userData["best_time"]
 
         except:
+            traceback.print_exc()
             # user file dose not exist or is destroyed.
             print("User file does not exist or is destroyed.")
             self.username = "anonymous"
