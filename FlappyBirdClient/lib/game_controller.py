@@ -36,6 +36,7 @@ isGamseStart = False
 # additional vars
 difficulty = 0 # 0~2 three stages
 
+#initialize game scene, call before everytime the game starts
 def initGameLayer():
     global spriteBird, gameLayer, land_1, land_2
     # gameLayer: 游戏场景所在的layer
@@ -54,6 +55,7 @@ def initGameLayer():
     # add gameLayer to gameScene
     gameScene.add(gameLayer)
 
+#beginning of the whole game
 def game_start(_gameScene, host, port):
     global gameScene, start_botton
     common.net = NetClient(host = host, port = port)
@@ -66,6 +68,7 @@ def game_start(_gameScene, host, port):
     gameLayer.add(start_botton, z=20, name=start_botton.name)
     common.net.connect()
 
+#Receive a string, return a cocos2d label with given style
 def createLabel(value, x, y):
     label=Label(value,  
         font_name='Times New Roman',  
@@ -134,21 +137,24 @@ def backToMainMenu():
     restartButton = RestartMenu()
     gameLayer.add(restartButton, z=50, name = restartButton.name)
 
+#Request notice and display it in the top
 def showNotice():
     data = common.net.notice()
     if data['code'] != 1:
         showContent(getErrorString(data['code']))
     else:
         showContent("Notice:"+data['notice'])
-    timer = threading.Timer(2, removeContent)
-    timer.start()
 
 
+#Display the string in the top, and remove it after 4 seconds
 def showContent(content):
     removeContent()
     notice = createLabel(content, common.visibleSize["width"]/2+5, common.visibleSize["height"] * 9/10)
     gameLayer.add(notice, z=70, name="content")
+    timer = threading.Timer(4, removeContent)
+    timer.start()
 
+#Remove the displayed string by showContent()
 def removeContent():
     try:
         gameLayer.remove("content")
@@ -157,6 +163,7 @@ def removeContent():
     
 
 class RestartMenu(Menu):
+    """The menu after ending of the game. It is able to return to main menu"""
     def __init__(self):  
         super(RestartMenu, self).__init__()
         self.name = "restart_menu"
@@ -216,7 +223,7 @@ class SingleGameStartMenu(Menu):
     def logIn(self):
         gameLayer.remove(self.name)
         loginMenu = InputLoginName(self)
-        gameLayer.add(loginMenu, z=70, name=loginMenu.name)
+        gameLayer.add(loginMenu, z=50, name=loginMenu.name)
 
     def register(self):
         gameLayer.remove(self.name)
@@ -227,6 +234,7 @@ class SingleGameStartMenu(Menu):
         common.net.initializeSession(common.user.token)
         common.net.logout(common.user.token)
         common.user.token = ""
+        common.user.save()
         global start_botton
         start_botton.__init__()
         gameLayer.remove(self.name)
@@ -273,7 +281,7 @@ class ChooseDifficultyMenu(Menu):
         gameLayer.add(self.pre_menu, z=50, name = self.pre_menu.name)
 
 class InputLoginName(cocos.layer.ColorLayer):
-    """Receive the name input here, next is password input"""
+    """Receive the name input for login/register, next is password input"""
     is_event_handler=True
     def __init__(self, pre_menu, isRegister=False):
         super(InputLoginName, self).__init__(0,0,0,0)
@@ -310,9 +318,6 @@ class InputLoginName(cocos.layer.ColorLayer):
     def on_key_press(self, k, m):
         if k == pyglet.window.key.ENTER:
             print "You Entered: {}".format(self.keys_pressed)
-            # self.next_func()
-            # cocos.director.director.replace(FadeTransition(main_scene, 1))  # disabled for testing
-            # cocos.director.director.scene.end()  # added for testing
         else:
             kk = pyglet.window.key.symbol_string(k)
             if kk == "SPACE":
@@ -322,7 +327,11 @@ class InputLoginName(cocos.layer.ColorLayer):
             else:
                 # ignored_keys can obviously be expanded
                 ignored_keys = ("LSHIFT", "RSHIFT", "LCTRL", "RCTRL", "LCOMMAND", 
-                                "RCOMMAND", "LOPTION", "ROPTION", "UP", "DOWN", "LEFT", "RIGHT")
+                                "RCOMMAND", "LOPTION", "ROPTION", "UP", "DOWN", "LEFT", "RIGHT", "user_key(e5)")
+                if kk[0:4] == "NUM_":
+                    kk = kk[4]
+                if len(kk) == 2 and kk[0] == "_":
+                    kk = kk[1]
                 if kk not in ignored_keys and len(self.keys_pressed) < self.char_limit:
                     self.keys_pressed = self.keys_pressed + kk
             self.update_text()
@@ -337,7 +346,7 @@ class InputLoginName(cocos.layer.ColorLayer):
         gameLayer.add(self.pre_menu, z=50, name = self.pre_menu.name)
 
 class InputPassword(cocos.layer.ColorLayer):
-    """Receive the name input here, next is password input"""
+    """Receive the password input for login/register, then return to main menu"""
     is_event_handler=True
     def __init__(self, pre_menu, user_name, pre_pre_menu, isRegister=False):
         super(InputPassword, self).__init__(0,0,0,0)
@@ -387,7 +396,11 @@ class InputPassword(cocos.layer.ColorLayer):
             else:
                 # ignored_keys can obviously be expanded
                 ignored_keys = ("LSHIFT", "RSHIFT", "LCTRL", "RCTRL", "LCOMMAND", 
-                                "RCOMMAND", "LOPTION", "ROPTION", "UP", "DOWN", "LEFT", "RIGHT")
+                                "RCOMMAND", "LOPTION", "ROPTION", "UP", "DOWN", "LEFT", "RIGHT", "user_key(e5)")
+                if kk[0:4] == "NUM_":
+                    kk = kk[4]
+                if len(kk) == 2 and kk[0] == "_":
+                    kk = kk[1]
                 if kk not in ignored_keys and len(self.keys_pressed) < self.char_limit:
                     self.keys_pressed = self.keys_pressed + kk
             self.update_text()
@@ -404,8 +417,6 @@ class InputPassword(cocos.layer.ColorLayer):
                 err_str = getErrorString(data['code'])
                 print err_str
                 showContent(err_str)
-                time.sleep(2)
-                removeContent()
             self.backToPrePreMenu()
         else:
             #Register
@@ -414,10 +425,8 @@ class InputPassword(cocos.layer.ColorLayer):
                 err_str = getErrorString(data['code'])
                 print err_str
                 showContent(err_str)
-                time.sleep(2)
-                removeContent()
+
             self.backToPrePreMenu()
-            pass
 
     def cancel(self):
         gameLayer.remove(self.name)
@@ -430,6 +439,7 @@ class InputPassword(cocos.layer.ColorLayer):
         gameLayer.add(start_botton, z=50, name = start_botton.name)
 
 class RankByWhatMenu(Menu):
+    """Menu to choose rank by which standard"""
     def __init__(self, pre_menu):
         super(RankByWhatMenu, self).__init__("Rank by?")
         self.font_title['font_name'] = 'Times New Roman'
@@ -453,6 +463,7 @@ class RankByWhatMenu(Menu):
         gameLayer.add(rankList, z=50, name = rankList.name)
 
 class RankList(cocos.layer.ColorLayer):
+    """Display ranking list, then return to main menu"""
     is_event_handler=True
     def __init__(self, pre_menu, choosed):
         super(RankList, self).__init__(0,0,0,0)
