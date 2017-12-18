@@ -29,7 +29,6 @@ class Account:
             self.best_time = userData["best_time"]
 
         except:
-            traceback.print_exc()
             # user file dose not exist or is destroyed.
             print("User file does not exist or is destroyed.")
             self.username = "anonymous"
