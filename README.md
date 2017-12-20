@@ -26,7 +26,7 @@ the bird can pass pipes randomly generated.
 Interactions between server and logined clients are based on tokens to improve the security of sessions. User password is encrypted
 using MD5 and our server stores only MD5 encrypted password.
 
-According to the requirement from our course, we made the following compromise:
+According to the requirements from our course, we made the following compromise:
 
 * File-based database.
 * Simple server based on python built-in `socket` library. (No additional third-party library is allowed.)

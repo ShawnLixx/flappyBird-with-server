@@ -200,6 +200,7 @@ class FlappyServer:
         self._endTimers()
         self._endSaver()
         self.save()
+        self.sock.close()
 
     def save(self):
         with open(self.path, "w") as f:

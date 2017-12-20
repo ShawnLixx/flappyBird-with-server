@@ -22,7 +22,8 @@ class NetClient:
             # receive sid
             self.connected = True
             response = self._recv()
-            self.sid = response['sid']
+            if response != None:
+                self.sid = response['sid']
         except Exception:
             traceback.print_exc()
             self.connected = False
