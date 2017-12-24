@@ -48,7 +48,9 @@ class NetClient:
     @connectedRequired
     def _recv(self):
         data = netstream.read(self.sock)
-        if data == netstream.TIMEOUT or data == netstream.CLOSED or data == netstream.EMPTY:
+        if data == netstream.TIMEOUT:
+            return {'code': 7}
+        elif data == netstream.EMPTY or data == netstream.CLOSED:
             return None
         else:
             return data

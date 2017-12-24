@@ -24,26 +24,22 @@ def send(sock, dic):  # take dict as argument!!
 def read(sock):
     #读取三位的长度信息
     sock.setblocking(1)
+    sock.settimeout(1)
     try:
         length = sock.recv(3)
-    except socket.error as (err_code, err_message):
-        #异常处理
-        if err_code == 35:
-            return TIMEOUT
-        elif err_code == 54:
+        #读取到''说明socket另一头被关闭
+        if length == '':
             return CLOSED
-        elif err_code == 9:
-            return CLOSED
-        else:
-            return TIMEOUT
-    #读取到''说明socket另一头被关闭
-    if length == '':
+    
+        length = int(length)
+        if length == 0:
+            return EMPTY
+
+    except socket.timeout:
+        return TIMEOUT
+    except socket.error:
         return CLOSED
-    
-    length = int(length)
-    if length == 0:
-        return EMPTY
-    
+        
     #根据长度信息读取数据
     try:
         data = sock.recv(length)
