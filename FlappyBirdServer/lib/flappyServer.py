@@ -392,9 +392,9 @@ class FlappyServer:
             self.logger.log("Trying to logout, but token invalid.", usid)
         else:
             self.connections[usid]['uid'] = -1
-            self._logout(uid)
             netstream.send(self.connections[usid]['connection'], {
                 "code": 1}) # code 1 for success
+            self._logout(uid)
             self.logger.log("Logout successfully.", usid)
 
     def updateData(self, token, score, time, num, usid):
