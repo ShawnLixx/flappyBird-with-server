@@ -9,7 +9,7 @@ SESSION_NOT_INIT = "Connection from server is broken!"
 TOKEN_ERROR = "Authentication failed, please login again!"
 NETWORK_ERROR = "Network Error, check your network settings or server may be shutdown!"
 BLOCKED = "You are in the black list of the server! Please contact the admin!"
-SESSION_TIMEOUT = "Your session is removed by server because of timeout, please re-connect!"
+SESSION_TIMEOUT = "Your session is removed by server because of timeout, please restart the game!"
 
 def getErrorString(code):
     if code == -1:

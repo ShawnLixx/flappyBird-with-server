@@ -232,7 +232,11 @@ class SingleGameStartMenu(Menu):
 
     def logOut(self):
         common.net.initializeSession(common.user.token)
-        common.net.logout(common.user.token)
+        data = common.net.logout(common.user.token)
+        if data['code'] != 1:
+            err_str = getErrorString(data['code'])
+            print err_str
+            showContent(err_str)
         common.user.token = ""
         common.user.save()
         global start_botton
@@ -409,6 +413,7 @@ class InputPassword(cocos.layer.ColorLayer):
         if self.isRegister==False:
             #Login
             data = common.net.login(self.user_name, self.keys_pressed)
+            print data
             if data['code'] == 1:
                 common.user.token = data['token']
                 common.user.username = self.user_name
@@ -487,6 +492,10 @@ class RankList(cocos.layer.ColorLayer):
 
     def showRankList(self):
         data = common.net.getLeaderboard(self.choosed)
+        if data['code'] != 1:
+            err_str = getErrorString(data['code'])
+            print err_str
+            showContent(err_str)
         rankList = data['leaderboard']
         # rankList = [{"user_name":"abc", "data":123}, {"user_name":"abcdefghij", "data":123}]
         for i in range(len(rankList)):
