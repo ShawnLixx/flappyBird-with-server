@@ -16,6 +16,8 @@ def randstr(size = 8):
     return ''.join(random.choice(chars) for _ in range(size))
 
 global delay
+global users
+users = []
 size = [10]
 
 from time import time
@@ -35,10 +37,34 @@ def newClient(c):
 def registerLoginLogout(c):
     username = randstr()
     password = randstr()
+    global users
+    users.append([username, password])
     c.registration(username, password)
-    token = c.login(username, password)
+    token = c.login(username, password)['token']
+    c.initializeSession(token)
     c.logout(token)
-    token = c.login(username, password)
+
+def noticeLeaderboardUserinfo(c):
+    username, password = random.choice(users)
+    token = c.login(username, password)['token']
+    c.initializeSession(token)
+    c.notice()
+    c.getLeaderboard(0)
+    c.getLeaderboard(1)
+    c.getLeaderboard(2)
+    c.getUserinfo(token)
+    c.logout(token)
+
+def gameplay(c):
+    username, password = random.choice(users)
+    token = c.login(username, password)['token']
+    c.initializeSession(token)
+    score, time, num = [0, 0, 0]
+    for i in range(10):
+        score += random.randint(1, 10)
+        time += random.randint(1, 10)
+        num += random.randint(1, 10)
+        c.updateData(token, score, time, num)
     c.logout(token)
 
 def mixedText(c):
@@ -78,8 +104,16 @@ class Test(unittest.TestCase):
         testWithPressure( newClient, 'connection' )
         self.assertTrue(True)
 
-    def test_02_RegisterLoginLogout(self):
+    def test_02_registerLoginLogout(self):
         testWithPressure( registerLoginLogout, 'register, login and logout')
+        self.assertTrue(True)
+
+    def test_03_noticeLeaderboardUserinfo(self):
+        testWithPressure( noticeLeaderboardUserinfo, 'notice' )
+        self.assertTrue(True)
+
+    def test_04_gameplay(self):
+        testWithPressure( gameplay, 'gameplay' )
         self.assertTrue(True)
 
 if __name__ == '__main__':
