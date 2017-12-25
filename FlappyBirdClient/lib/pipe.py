@@ -9,7 +9,7 @@ from bird import *
 from score import *
 from game_controller import *
 import common
-import errors
+from errors import getErrorString
 
 # constants
 pipeCount = 3
