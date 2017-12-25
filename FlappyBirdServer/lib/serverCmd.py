@@ -140,7 +140,7 @@ class ServerCmd(cmd.Cmd, object):
         args = self.logParser.parse_args(line.split())
         if args != None:
             print(self.server.logger.readLastN(args.n))
-    def help_log(self, line):
+    def help_log(self):
         self.logParser.print_help()
 
 
